@@ -40,72 +40,63 @@ Contiene las implementaciones técnicas concretas y las comunicaciones con el ex
 
 ## 3. Diagrama de Enfoque Arquitectónico (Mermaid)
 
+# Enfoque Arquitectónico del Sistema Marketplace: Clean Architecture
+
+## Diagrama de Enfoque Arquitectónico (Mermaid)
+
 ```mermaid
 graph TD
-    %% Actor de entrada
-    Usuario[👤 Cliente / Usuario Web]
+    %% Actor
+    Usuario[👤 Usuario / Cliente Web]
 
-    %% Delimitación del Frontend
-    subgraph Frontend ["📱 Aplicación Web: Marketplace (Angular 18)"]
+    %% Frontend Angular (Clean Architecture)
+    subgraph Frontend ["📱 APLICACIÓN FRONTEND (Angular 18)"]
         
         %% CAPA 1: PRESENTACIÓN
         subgraph CapaPres ["1. CAPA DE PRESENTACIÓN (UI)"]
-            Comp_Cat["CatalogoComponent"]
-            Comp_Car["CarritoComponent"]
-            Comp_App["AppComponent"]
+            UI["Componentes Angular<br/>(CatalogoComponent, CarritoComponent)"]
         end
 
         %% CAPA 2: APLICACIÓN
         subgraph CapaApp ["2. CAPA DE APLICACIÓN (Casos de Uso)"]
-            UC1["ConsultarCatalogoUseCase"]
-            UC2["AgregarAlCarritoUseCase"]
-            UC3["RegistrarCompraUseCase"]
+            UC["Casos de Uso<br/>(ConsultarCatalogo, AgregarAlCarrito, RegistrarCompra)"]
         end
 
         %% CAPA 3: DOMINIO
-        subgraph CapaDom ["3. CAPA DE DOMINIO (Núcleo de Negocio)"]
-            subgraph Entidades ["Modelos / Entidades"]
-                Prod["Producto"]
-                Cart["Carrito"]
-                Ped["Pedido"]
-            end
-            subgraph Puertos ["Puertos / Interfaces (Contratos)"]
-                I_RepoProd["RepositorioProducto"]
-                I_RepoPed["RepositorioPedido"]
-                I_Pago["ProcesadorPagos"]
-            end
+        subgraph CapaDom ["3. CAPA DE DOMINIO (Reglas del Negocio)"]
+            Entidades["Entidades / Modelos<br/>(Producto, Carrito, Pedido)"]
+            Puertos["Puertos / Contratos (Interfaces)<br/>(RepositorioProducto, ProcesadorPagos)"]
         end
 
         %% CAPA 4: INFRAESTRUCTURA
         subgraph CapaInfra ["4. CAPA DE INFRAESTRUCTURA (Implementaciones)"]
-            Impl_RepoProd["RepositorioProductoMemoria / Http"]
-            Impl_RepoPed["RepositorioPedidoMemoria"]
-            Impl_Pago["ProcesadorPagosStripe"]
-            DataSim["DATOS.TS (Simulador)"]
+            Impl["Implementaciones Concretas<br/>(RepositorioMemoria, RepositorioHttp, ServicioPagos)"]
+            DataLocal["DATOS.TS (Datos Simulado)"]
         end
 
         %% Inyección de Dependencias
-        AppConfig["app.config.ts (Ensamblador / Inyector)"]
+        AppConfig["app.config.ts (Inyector de Dependencias)"]
     end
 
     %% Backend Externo
     Backend["🌐 Marketplace API REST (Backend Monolito)"]
 
-    %% RELACIONES Y FLUJO DE DEPENDENCIAS (Inward Flow)
-    Usuario --> CapaPres
-    CapaPres --> CapaApp
-    CapaApp --> CapaDom
+    %% FLUJO Y DEPENDENCIAS (Regla de la Dependencia hacia Adentro)
+    Usuario --> UI
+    UI --> UC
+    UC --> Entidades
+    UC --> Puertos
     
-    %% Inversión de Dependencias (Infraestructura implementa las interfaces del Dominio)
-    CapaInfra -.->|Implementa| Puertos
-    DataSim --> CapaInfra
-    AppConfig -.->|Configura e Inyecta| CapaInfra
+    %% Inversión de Control
+    Impl -.->|Implementa| Puertos
+    DataLocal --> Impl
+    AppConfig -.->|Inyecta Servicios| Impl
 
-    %% Comunicación externa
-    CapaInfra -->|HTTP / REST| Backend
+    %% Comunicación Externa
+    Impl -->|HTTP / REST| Backend
 
     %% ESTILOS VISUALES
-    style Frontend fill:#fdfdfd,stroke:#333,stroke-width:2px
+    style Frontend fill:#fafafa,stroke:#333,stroke-width:2px
     style CapaPres fill:#e3f2fd,stroke:#1565c0,stroke-width:1px
     style CapaApp fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px
     style CapaDom fill:#fff8e1,stroke:#f57f17,stroke-width:2px
